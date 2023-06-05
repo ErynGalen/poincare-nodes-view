@@ -8,7 +8,14 @@ use quick_xml::{
 };
 
 fn main() {
-    let xml_string = read_to_string("poincare-log.xml").expect("poincare-log.xml not fould");
+    let xml_string_result = read_to_string("poincare-log.xml");
+    let xml_string = match xml_string_result {
+        Err(e) => {
+            println!("Error while opening poincare-log.xml: {}", e);
+            return;
+        }
+        Ok(xml_string) => xml_string,
+    };
     let mut reader = Reader::from_str(&xml_string);
     reader.trim_text(true);
     loop {
@@ -52,12 +59,14 @@ fn get_attribute_from_start(start: &BytesStart, attr_name: &[u8]) -> Option<Stri
 struct ReduceProcessNode {
     steps: Vec<StepNode>,
     original_expression: Option<PoincareNode>,
+    result_expression: Option<PoincareNode>,
 }
 impl ReduceProcessNode {
     fn from_start(_start: &BytesStart) -> Self {
         Self {
             steps: Vec::new(),
             original_expression: None,
+            result_expression: None,
         }
     }
     fn build(&mut self, reader: &mut Reader<&[u8]>) {
@@ -81,6 +90,25 @@ impl ReduceProcessNode {
                         match reader.read_event() {
                             Ok(Event::End(end)) => match end.name().as_ref() {
                                 b"OriginalExpression" => (),
+                                string => panic_event(
+                                    &reader,
+                                    String::from_utf8(string.to_vec()).unwrap(),
+                                ),
+                            },
+                            other => panic_event(reader, other),
+                        }
+                    }
+                    // TODO: (?) this is duplicated from the previous case b"OriginalExpression"
+                    b"ResultExpression" => {
+                        if self.result_expression.is_some() {
+                            panic_event(reader, "Second ResultExpression not allowed");
+                        }
+                        let mut expr = PoincareNode::from_previous(reader);
+                        expr.build(reader);
+                        self.result_expression = Some(expr);
+                        match reader.read_event() {
+                            Ok(Event::End(end)) => match end.name().as_ref() {
+                                b"ResultExpression" => (),
                                 string => panic_event(
                                     &reader,
                                     String::from_utf8(string.to_vec()).unwrap(),
@@ -115,6 +143,16 @@ impl Display for ReduceProcessNode {
         for step in &self.steps {
             write!(indented(f), "{}\n", step)?;
         }
+        write!(
+            f,
+            "*-> {}",
+            &self.result_expression.clone().unwrap_or(PoincareNode {
+                name: String::new(),
+                id: String::new(),
+                children: Vec::new(),
+                attributes: None,
+            })
+        )?;
         Ok(())
     }
 }

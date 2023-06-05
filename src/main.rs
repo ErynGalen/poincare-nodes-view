@@ -384,7 +384,7 @@ impl PoincareAttributes {
 impl Display for PoincareAttributes {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::BasedInteger { base, integer } => write!(f, "{}<{}>", integer, base)?,
+            Self::BasedInteger { base, integer } => write!(f, "{}__{}", integer, base)?,
             Self::CodePointLayout { code_point } => write!(f, "{}", code_point)?,
             Self::Decimal {
                 negative,

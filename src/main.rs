@@ -261,8 +261,7 @@ enum PoincareAttributes {
         integer: String,
     },
     CodePointLayout {
-        #[allow(non_snake_case)]
-        CodePoint: String,
+        code_point: String,
     },
     Decimal {
         negative: String,
@@ -292,8 +291,7 @@ enum PoincareAttributes {
     },
     Unit {
         prefix: String,
-        #[allow(non_snake_case)]
-        rootSymbol: String,
+        root_symbol: String,
     },
 }
 impl PoincareAttributes {
@@ -305,7 +303,7 @@ impl PoincareAttributes {
                 integer: get_attribute_from_start(start, b"integer")?,
             }),
             b"CodePointLayout" => Some(Self::CodePointLayout {
-                CodePoint: get_attribute_from_start(start, b"CodePoint")?,
+                code_point: get_attribute_from_start(start, b"CodePoint")?,
             }),
             b"Decimal" => Some(Self::Decimal {
                 negative: get_attribute_from_start(start, b"decimal")?,
@@ -335,7 +333,7 @@ impl PoincareAttributes {
             }),
             b"Unit" => Some(Self::Unit {
                 prefix: get_attribute_from_start(start, b"prefix")?,
-                rootSymbol: get_attribute_from_start(start, b"rootSymbol")?,
+                root_symbol: get_attribute_from_start(start, b"rootSymbol")?,
             }),
             _ => None,
         }
@@ -345,7 +343,7 @@ impl Display for PoincareAttributes {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::BasedInteger { base, integer } => write!(f, "{}<{}>", integer, base)?,
-            Self::CodePointLayout { CodePoint } => write!(f, "{}", CodePoint)?,
+            Self::CodePointLayout { code_point } => write!(f, "{}", code_point)?,
             Self::Decimal {
                 negative,
                 mantissa,
@@ -395,7 +393,7 @@ impl Display for PoincareAttributes {
                 denominator
             )?,
             Self::SymbolAbstract { name } => write!(f, "{}", name)?,
-            Self::Unit { prefix, rootSymbol } => write!(f, "{}{}", prefix, rootSymbol)?,
+            Self::Unit { prefix, root_symbol } => write!(f, "{}{}", prefix, root_symbol)?,
         }
         Ok(())
     }

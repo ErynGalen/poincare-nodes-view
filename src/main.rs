@@ -328,9 +328,13 @@ impl PoincareAttributes {
                 numerator: get_attribute_from_start(start, b"numerator")?,
                 denominator: get_attribute_from_start(start, b"denominator")?,
             }),
-            b"SymbolAbstract" => Some(Self::SymbolAbstract {
-                name: get_attribute_from_start(start, b"name")?,
-            }),
+            b"SymbolAbstract"
+            // Subclasses of SymbolAbstract
+            | b"Symbol" | b"Sequence" | b"Function" | b"Constant" => {
+                Some(Self::SymbolAbstract {
+                    name: get_attribute_from_start(start, b"name")?,
+                })
+            }
             b"Unit" => Some(Self::Unit {
                 prefix: get_attribute_from_start(start, b"prefix")?,
                 root_symbol: get_attribute_from_start(start, b"rootSymbol")?,
@@ -393,7 +397,10 @@ impl Display for PoincareAttributes {
                 denominator
             )?,
             Self::SymbolAbstract { name } => write!(f, "{}", name)?,
-            Self::Unit { prefix, root_symbol } => write!(f, "{}{}", prefix, root_symbol)?,
+            Self::Unit {
+                prefix,
+                root_symbol,
+            } => write!(f, "{}{}", prefix, root_symbol)?,
         }
         Ok(())
     }

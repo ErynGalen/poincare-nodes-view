@@ -1,17 +1,24 @@
 # Poincare Nodes View
-This programs pretty-prints the XML coming from poincare logs.
+`poincare-nodes-view` pretty-prints the XML coming from poincare logs.
 This logs are generated using [the instrument-poincare branch from my fork of Upsilon](https://github.com/ErynGalen/Upsilon/tree/instrument-poincare).
+
+## Compiling Upsilon to get the logs
+You can get [my fork of Upsilon](https://github.com/ErynGalen/Upsilon), and `git switch instrument-poincare` to have Upsilon with the Poincare logs.
+The compilation can then be done (only debug mode, i.e. `make DEBUG=1 ...`, has been tested).
+
+The simulator should be used to obtain the logs, by simply doing some calculation. Every time Poincare is used its actions are logged.
+So that the logging actually happens, the branch defines `POINCARE_TREE_LOG=1` for the simulator.
 
 ## Usage
 ### Requirements
 * a Rust toolchain
 ### Running
-To run this program you can use `cargo run`. This will run a debug build.
+To run `poincare-nodes-view` you can use `cargo run`. This will run a debug build.
 
-The program reads a the file `poincare-log.xml`, expected to be in the directory from which you are running the program in.
+`poincare-nodes-view` reads the file `poincare-log.xml`, expected to be in the directory from which you are running the program in.
 See [the format of the file](#xml-log-format) for more information.
 
-It outputs the parsed and beautified log of actions preformed by Poincare when simplifying an expression.
+`poincare-nodes-view` outputs in a (hopefully) readable form the log of actions preformed by Poincare when simplifying an expression.
 See [the parsed action tree](#parsed-action-tree) for more information.
 
 ### Building

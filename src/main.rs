@@ -134,7 +134,7 @@ impl Display for ReduceProcessNode {
         write!(
             f,
             "{} {}:\n",
-            "* Reduce".red(),
+            "* Reduce".red().bold(),
             &self
                 .original_expression
                 .clone()
@@ -152,7 +152,7 @@ impl Display for ReduceProcessNode {
         write!(
             f,
             "{} {}",
-            "*->".red(),
+            "*->".red().bold(),
             &self
                 .result_expression
                 .clone()
@@ -219,10 +219,10 @@ impl StepNode {
 }
 impl Display for StepNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let begin_str = format!("/> {} \n", self.name).cyan();
+        let begin_str = format!("/> {} \n", self.name).cyan().bold();
         write!(f, "{}", begin_str)?;
         if let Some(before) = &self.before {
-            write!(f, "{} {}\n", "|".cyan(), before.pretty_print(0))?;
+            write!(f, "{} {}\n", "|".cyan().bold(), before.pretty_print(0))?;
         }
         if self.substeps.len() > 0 {
             for substep in &self.substeps {
@@ -230,7 +230,7 @@ impl Display for StepNode {
             }
         }
         if let Some(after) = &self.after {
-            write!(f, "{} {}", "\\".cyan(), after.pretty_print(0))?;
+            write!(f, "{} {}", "\\_".cyan().bold(), after.pretty_print(0))?;
         }
         Ok(())
     }

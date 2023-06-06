@@ -135,12 +135,16 @@ impl Display for ReduceProcessNode {
             f,
             "{} {}:\n",
             "* Reduce".red(),
-            &self.original_expression.clone().unwrap_or(PoincareNode {
-                name: String::new(),
-                id: String::new(),
-                children: Vec::new(),
-                attributes: None,
-            })
+            &self
+                .original_expression
+                .clone()
+                .unwrap_or(PoincareNode {
+                    name: String::new(),
+                    id: String::new(),
+                    children: Vec::new(),
+                    attributes: None,
+                })
+                .pretty_print(0)
         )?;
         for step in &self.steps {
             write!(indented(f), "{}\n", step)?;
@@ -149,12 +153,16 @@ impl Display for ReduceProcessNode {
             f,
             "{} {}",
             "*->".red(),
-            &self.result_expression.clone().unwrap_or(PoincareNode {
-                name: String::new(),
-                id: String::new(),
-                children: Vec::new(),
-                attributes: None,
-            })
+            &self
+                .result_expression
+                .clone()
+                .unwrap_or(PoincareNode {
+                    name: String::new(),
+                    id: String::new(),
+                    children: Vec::new(),
+                    attributes: None,
+                })
+                .pretty_print(0)
         )?;
         Ok(())
     }
@@ -211,10 +219,10 @@ impl StepNode {
 }
 impl Display for StepNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let begin_str = format!("/> {} \n", self.name).bright_magenta();
+        let begin_str = format!("/> {} \n", self.name).cyan();
         write!(f, "{}", begin_str)?;
         if let Some(before) = &self.before {
-            write!(f, "{} {}\n", "|".bright_magenta(), before)?;
+            write!(f, "{} {}\n", "|".cyan(), before.pretty_print(0))?;
         }
         if self.substeps.len() > 0 {
             for substep in &self.substeps {
@@ -222,7 +230,7 @@ impl Display for StepNode {
             }
         }
         if let Some(after) = &self.after {
-            write!(f, "{} {}", "\\".bright_magenta(), after)?;
+            write!(f, "{} {}", "\\".cyan(), after.pretty_print(0))?;
         }
         Ok(())
     }
@@ -278,22 +286,31 @@ impl PoincareNode {
             }
         }
     }
-}
-impl Display for PoincareNode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}({})", self.name, self.id)?;
+    fn pretty_print(&self, nesting_level: usize) -> ColoredString {
+        let mut output = String::new();
+        let id_white_str = format!("({})", self.id).white();
+        output.push_str(&format!("{}{}", self.name, id_white_str));
         if let Some(attributes) = &self.attributes {
-            let attributes_str = format!("{}", attributes).green();
-            write!(f, ": {}", attributes_str)?;
+            let attributes_str = attributes.pretty_print().green();
+            output.push_str(&format!(": {}", attributes_str));
         }
         if self.children.len() > 0 {
-            write!(f, " {} ", "{".cyan())?;
+            output.push_str(" { ");
             for child in &self.children {
-                write!(f, "{}, ", child)?;
+                output.push_str(&format!("{}, ", child.pretty_print(nesting_level + 1)));
             }
-            write!(f, " {}", "}".cyan())?;
+            output.push_str("}");
         }
-        Ok(())
+        output.color(Self::nesting_level_color(nesting_level))
+    }
+    fn nesting_level_color(level: usize) -> String {
+        let level = level % 3;
+        String::from(match level {
+            0 => "yellow",
+            1 => "magenta",
+            2 => "blue",
+            _ => unreachable!(),
+        })
     }
 }
 
@@ -385,18 +402,15 @@ impl PoincareAttributes {
             _ => None,
         }
     }
-}
-impl Display for PoincareAttributes {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn pretty_print(&self) -> String {
         match self {
-            Self::BasedInteger { base, integer } => write!(f, "{}__{}", integer, base)?,
-            Self::CodePointLayout { code_point } => write!(f, "{}", code_point)?,
+            Self::BasedInteger { base, integer } => format!("{}__{}", integer, base),
+            Self::CodePointLayout { code_point } => format!("{}", code_point),
             Self::Decimal {
                 negative,
                 mantissa,
                 exponent,
-            } => write!(
-                f,
+            } => format!(
                 "{}{}x10^{}",
                 if negative == "0" {
                     ""
@@ -407,10 +421,9 @@ impl Display for PoincareAttributes {
                 },
                 mantissa,
                 exponent
-            )?,
-            Self::Float { value } => write!(f, "{}", value)?,
-            Self::Infinity { negative } => write!(
-                f,
+            ),
+            Self::Float { value } => format!("{}", value),
+            Self::Infinity { negative } => format!(
                 "{}inf",
                 if negative == "0" {
                     ""
@@ -419,15 +432,14 @@ impl Display for PoincareAttributes {
                 } else {
                     "sign?"
                 }
-            )?,
-            Self::Integer { value } => write!(f, "{}", value)?,
-            Self::Matrix { rows, columns } => write!(f, "rows: {}, columns: {}", rows, columns)?,
+            ),
+            Self::Integer { value } => format!("{}", value),
+            Self::Matrix { rows, columns } => format!("rows: {}, columns: {}", rows, columns),
             Self::Rational {
                 negative,
                 numerator,
                 denominator,
-            } => write!(
-                f,
+            } => format!(
                 "{}{}/{}",
                 if negative == "0" {
                     ""
@@ -438,13 +450,12 @@ impl Display for PoincareAttributes {
                 },
                 numerator,
                 denominator
-            )?,
-            Self::SymbolAbstract { name } => write!(f, "{}", name)?,
+            ),
+            Self::SymbolAbstract { name } => format!("{}", name),
             Self::Unit {
                 prefix,
                 root_symbol,
-            } => write!(f, "{}{}", prefix, root_symbol)?,
+            } => format!("{}{}", prefix, root_symbol),
         }
-        Ok(())
     }
 }

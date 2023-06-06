@@ -29,7 +29,7 @@ The resulting binary will be `target/release/poincare-nodes-view`.
 At the top-level of the XML file there should only be `ReduceProcess` nodes.
 A `ReduceProcess` node is made of:
 * a `OriginalExpression` and a `ResultExpression` containing [`PoincareNode`s](#poincare-node), which represent the expression before and after the simplification
-* several `Step` nodes containing two [`PoincareNode`s](#poincare-node), representing **some part** of the expression before and after the simplification step. The unique id's in the expression before the step can be used to know which part of the expression is simplified by the step.
+* several `Step` nodes containing two [`PoincareNode`s](#poincare-node), representing **some part** of the expression before and after the simplification step. The unique ids in the expression before the step can be used to know which part of the expression is simplified by the step.
 ### Poincare Node
 A Poincare node has the following form:
 `<NodeName id="..." attr1="..." attr2="..."> ...children... </NodeName>`.
@@ -57,7 +57,7 @@ Each simplification step has the form:
 |    <substep1>
 |    <substep2>
 |    ...
-\ <poincare expression>
+\_ <poincare expression>
 ```
 Each step has a name which represents which function is achieving it.
 

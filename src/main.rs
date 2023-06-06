@@ -1,3 +1,4 @@
+use colored::*;
 use indenter::indented;
 use std::fmt::{self, Debug, Display, Write};
 use std::fs::read_to_string;
@@ -132,7 +133,8 @@ impl Display for ReduceProcessNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "* Reduce {}:\n",
+            "{} {}:\n",
+            "* Reduce".red(),
             &self.original_expression.clone().unwrap_or(PoincareNode {
                 name: String::new(),
                 id: String::new(),
@@ -145,7 +147,8 @@ impl Display for ReduceProcessNode {
         }
         write!(
             f,
-            "*-> {}",
+            "{} {}",
+            "*->".red(),
             &self.result_expression.clone().unwrap_or(PoincareNode {
                 name: String::new(),
                 id: String::new(),
@@ -208,9 +211,10 @@ impl StepNode {
 }
 impl Display for StepNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "/> {} \n", self.name)?;
+        let begin_str = format!("/> {} \n", self.name).bright_magenta();
+        write!(f, "{}", begin_str)?;
         if let Some(before) = &self.before {
-            write!(f, "| {}\n", before)?;
+            write!(f, "{} {}\n", "|".bright_magenta(), before)?;
         }
         if self.substeps.len() > 0 {
             for substep in &self.substeps {
@@ -218,7 +222,7 @@ impl Display for StepNode {
             }
         }
         if let Some(after) = &self.after {
-            write!(f, "\\ {}", after)?;
+            write!(f, "{} {}", "\\".bright_magenta(), after)?;
         }
         Ok(())
     }
@@ -279,14 +283,15 @@ impl Display for PoincareNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}({})", self.name, self.id)?;
         if let Some(attributes) = &self.attributes {
-            write!(f, ": {}", attributes)?;
+            let attributes_str = format!("{}", attributes).green();
+            write!(f, ": {}", attributes_str)?;
         }
         if self.children.len() > 0 {
-            write!(f, " {{ ")?;
+            write!(f, " {} ", "{".cyan())?;
             for child in &self.children {
                 write!(f, "{}, ", child)?;
             }
-            write!(f, " }}")?;
+            write!(f, " {}", "}".cyan())?;
         }
         Ok(())
     }

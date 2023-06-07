@@ -499,7 +499,7 @@ impl PoincareAttributes {
                 code_point: get_attribute_from_start(start, b"CodePoint")?,
             }),
             b"Decimal" => Some(Self::Decimal {
-                negative: get_attribute_from_start(start, b"decimal")?,
+                negative: get_attribute_from_start(start, b"negative")?,
                 mantissa: get_attribute_from_start(start, b"mantissa")?,
                 exponent: get_attribute_from_start(start, b"exponent")?,
             }),
@@ -544,7 +544,7 @@ impl PoincareAttributes {
                 mantissa,
                 exponent,
             } => format!(
-                "{}{}x10^{}",
+                "{}{} x10^{}",
                 if negative == "0" {
                     ""
                 } else if negative == "1" {

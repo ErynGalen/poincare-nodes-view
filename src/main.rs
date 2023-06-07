@@ -27,7 +27,12 @@ fn main() {
                 b"ReduceProcess" => {
                     let mut process = ReduceProcessNode::from_start(&start);
                     process.build(&mut reader);
-                    StepNode::remove_useless_recursive(&mut process.steps);
+                    let steps_to_remove_mask = StepTypeMask {
+                        based_integer_to_rational: true,
+                    };
+                    StepNode::remove_useless_recursive(&mut process.steps, |step| {
+                        steps_to_remove_mask.step_is_either(step)
+                    });
                     println!("{}\n", process);
                 }
                 string => panic_event(&reader, String::from_utf8(string.to_vec()).unwrap()),
@@ -217,21 +222,44 @@ impl StepNode {
             }
         }
     }
-    fn is_useful(&self) -> bool {
-        if let Some(before) = &self.before {
-            if let Some(after) = &self.after {
-                return before != after;
+    /// true if the step does nothing or if it's marked as useless by `non_trivial_is_useless()`
+    fn is_useful<F>(&self, non_trivial_is_useless: F) -> bool
+    where
+        F: Fn(&StepNode) -> bool + Copy,
+    {
+        if self.substeps.len() == 0 {
+            if let Some(before) = &self.before {
+                if let Some(after) = &self.after {
+                    if before == after {
+                        return false;
+                    }
+                    return !non_trivial_is_useless(self);
+                }
             }
+            // by default suppose the step is useful
+            return true;
+        } else {
+            // at least one substep must be useful
+            for substep in &self.substeps {
+                if substep.is_useful(non_trivial_is_useless) {
+                    return true;
+                }
+            }
+            return false;
         }
-        false
     }
-    fn remove_useless_recursive(steps: &mut Vec<StepNode>) {
+    /// removes recursively all steps which are not useful.
+    /// See `is_useful()` for more information
+    fn remove_useless_recursive<F>(steps: &mut Vec<StepNode>, non_trivial_is_useless: F)
+    where
+        F: Fn(&StepNode) -> bool + Copy,
+    {
         let mut steps_to_remove: Vec<usize> = Vec::new();
         for (n, step) in steps.iter_mut().enumerate() {
-            if !step.is_useful() {
+            if !step.is_useful(non_trivial_is_useless) {
                 steps_to_remove.push(n);
             } else {
-                step.remove_useless_children();
+                Self::remove_useless_recursive(&mut step.substeps, non_trivial_is_useless);
             }
         }
         // remove elements from the last one so that indexes don't change in the mean time
@@ -239,9 +267,6 @@ impl StepNode {
             let n = steps_to_remove.pop().unwrap();
             steps.remove(n);
         }
-    }
-    fn remove_useless_children(&mut self) {
-        Self::remove_useless_recursive(&mut self.substeps);
     }
 }
 impl Display for StepNode {
@@ -260,6 +285,27 @@ impl Display for StepNode {
             write!(f, "{} {}", "\\_".cyan().bold(), after.pretty_print(0))?;
         }
         Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct StepTypeMask {
+    based_integer_to_rational: bool,
+}
+impl StepTypeMask {
+    fn step_is_either(&self, step: &StepNode) -> bool {
+        if self.based_integer_to_rational {
+            if step.substeps.len() == 0 {
+                if let Some(before) = &step.before {
+                    if let Some(after) = &step.after {
+                        if before.name == "BasedInteger" && after.name == "Rational" {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        false
     }
 }
 
@@ -342,8 +388,14 @@ impl PoincareNode {
 }
 impl PartialEq for PoincareNode {
     fn eq(&self, other: &Self) -> bool {
-        let lhs: u32 = self.id.parse().expect("a node id should be a positive number");
-        let rhs: u32 = other.id.parse().expect("a node id should be a positive number");
+        let lhs: u32 = self
+            .id
+            .parse()
+            .expect("a node id should be a positive number");
+        let rhs: u32 = other
+            .id
+            .parse()
+            .expect("a node id should be a positive number");
         if lhs != rhs {
             return false;
         }

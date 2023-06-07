@@ -1,5 +1,6 @@
 use colored::*;
 use indenter::indented;
+use std::env;
 use std::fmt::{self, Debug, Display, Write};
 use std::fs::read_to_string;
 
@@ -9,6 +10,7 @@ use quick_xml::{
 };
 
 fn main() {
+    let arguments = Arguments::from_args(env::args());
     let xml_string_result = read_to_string("poincare-log.xml");
     let xml_string = match xml_string_result {
         Err(e) => {
@@ -27,17 +29,51 @@ fn main() {
                 b"ReduceProcess" => {
                     let mut process = ReduceProcessNode::from_start(&start);
                     process.build(&mut reader);
-                    let steps_to_remove_mask = StepTypeMask {
-                        based_integer_to_rational: true,
-                    };
-                    StepNode::remove_useless_recursive(&mut process.steps, |step| {
-                        steps_to_remove_mask.step_is_either(step)
-                    });
+                    if !arguments.show_useless {
+                        let steps_to_remove_mask = StepTypeMask {
+                            based_integer_to_rational: !arguments.show_number_to_rational,
+                        };
+                        StepNode::remove_useless_recursive(&mut process.steps, |step| {
+                            steps_to_remove_mask.step_is_either(step)
+                        });
+                    }
                     println!("{}\n", process);
                 }
                 string => panic_event(&reader, String::from_utf8(string.to_vec()).unwrap()),
             },
             Ok(ev) => panic_event(&reader, ev),
+        }
+    }
+}
+
+/// display options read from the command line
+#[derive(Debug, Clone, Copy)]
+struct Arguments {
+    show_useless: bool,
+    show_number_to_rational: bool,
+}
+impl Arguments {
+    fn from_args(args: env::Args) -> Self {
+        let mut arguments = Self::default();
+        // the first argument is almost always the program name or the path it was run from
+        for arg in args.skip(1) {
+            let arg = arg.trim();
+            if arg == "--useless" {
+                arguments.show_useless = true;
+            } else if arg == "--number-to-rational" {
+                arguments.show_number_to_rational = true;
+            } else {
+                eprintln!("Unknown argument: `{}`, skipping", arg);
+            }
+        }
+        arguments
+    }
+}
+impl Default for Arguments {
+    fn default() -> Self {
+        Self {
+            show_useless: false,
+            show_number_to_rational: false,
         }
     }
 }

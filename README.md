@@ -21,6 +21,13 @@ See [the format of the file](#xml-log-format) for more information.
 `poincare-nodes-view` outputs in a (hopefully) readable form the log of actions preformed by Poincare when simplifying an expression.
 See [the parsed action tree](#parsed-action-tree) for more information.
 
+### Command line options
+When running with `cargo run`, command line option must be passed as follow: `cargo run -- --opt1 --opt2`.
+
+By default some reduction steps aren't displayed, the following options are available to show them:
+* `--useless`: show all the steps, even those doing nothing. Implies `--number-to-rational`
+* `--number-to-rational`: show steps which transform f.e. a BasedInteger into a Rational with the same value
+
 ### Building
 To compile it in release mode you can use `cargo build --release`.
 The resulting binary will be `target/release/poincare-nodes-view`.

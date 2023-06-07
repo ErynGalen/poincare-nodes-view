@@ -27,6 +27,7 @@ fn main() {
                 b"ReduceProcess" => {
                     let mut process = ReduceProcessNode::from_start(&start);
                     process.build(&mut reader);
+                    StepNode::remove_useless_recursive(&mut process.steps);
                     println!("{}\n", process);
                 }
                 string => panic_event(&reader, String::from_utf8(string.to_vec()).unwrap()),
@@ -216,6 +217,32 @@ impl StepNode {
             }
         }
     }
+    fn is_useful(&self) -> bool {
+        if let Some(before) = &self.before {
+            if let Some(after) = &self.after {
+                return before != after;
+            }
+        }
+        false
+    }
+    fn remove_useless_recursive(steps: &mut Vec<StepNode>) {
+        let mut steps_to_remove: Vec<usize> = Vec::new();
+        for (n, step) in steps.iter_mut().enumerate() {
+            if !step.is_useful() {
+                steps_to_remove.push(n);
+            } else {
+                step.remove_useless_children();
+            }
+        }
+        // remove elements from the last one so that indexes don't change in the mean time
+        while !steps_to_remove.is_empty() {
+            let n = steps_to_remove.pop().unwrap();
+            steps.remove(n);
+        }
+    }
+    fn remove_useless_children(&mut self) {
+        Self::remove_useless_recursive(&mut self.substeps);
+    }
 }
 impl Display for StepNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -311,6 +338,24 @@ impl PoincareNode {
             2 => "blue",
             _ => unreachable!(),
         })
+    }
+}
+impl PartialEq for PoincareNode {
+    fn eq(&self, other: &Self) -> bool {
+        let lhs: u32 = self.id.parse().expect("a node id should be a positive number");
+        let rhs: u32 = other.id.parse().expect("a node id should be a positive number");
+        if lhs != rhs {
+            return false;
+        }
+        // comparing children rely on the iterators yielding items in a well-defined order
+        let lhs_children = self.children.iter();
+        let rhs_children = other.children.iter();
+        for (lhs_child, rhs_child) in lhs_children.zip(rhs_children) {
+            if lhs_child != rhs_child {
+                return false;
+            }
+        }
+        true
     }
 }
 

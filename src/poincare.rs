@@ -156,6 +156,7 @@ impl PoincareNode {
                 "ImaginaryPart" => Some("imag"),
                 "LeastCommonMultiple" => Some("lcm"),
                 "Integral" => Some("int"),
+                "Logarithm" => Some("log"),
                 "Opposite" => Some("-"),
                 "Randint" => Some("randint"),
                 "Random" => Some("rand"),
@@ -189,6 +190,14 @@ impl PoincareNode {
             };
             if let Some(name) = plain_name {
                 output.push_str(name);
+                break 'types;
+            }
+            if self.name == "Parenthesis" {
+                if self.children.len() != 1 {
+                    panic!("ParenthesisNode can only have exactly one child");
+                }
+                // display {} for ParenthesisNode to differentiate it from other parentheses
+                output.push_str(&format!("{{{}}}", children_output.first().unwrap()));
                 break 'types;
             }
             // default to full log when nothing else is available

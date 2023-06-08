@@ -104,7 +104,7 @@ impl PoincareNode {
             // TODO: abstract this
             let nary_operation: Option<&str> = match self.name.as_str() {
                 "Addition" => Some("+"),
-                "Subtraction" => Some("'"),
+                "Subtraction" => Some("-"),
                 "Multiplication" => Some("*"),
                 "Division" => Some("/"),
                 "Power" => Some("^"),
@@ -135,6 +135,35 @@ impl PoincareNode {
             let prefixed_function: Option<&str> = match self.name.as_str() {
                 // TODO: complete the list
                 "AbsoluteValue" => Some("abs"),
+                "ArcCosine" => Some("acos"),
+                "ArcSine" => Some("asin"),
+                "ArcTangent" => Some("atan"),
+                "BinomCDF" => Some("bCDF"),
+                "BinomPDF" => Some("bPDF"),
+                "Ceiling" => Some("ceil"),
+                "Conjugate" => Some("conj"),
+                "Cosine" => Some("cos"),
+                "Derivative" => Some("der"),
+                "Floor" => Some("floor"),
+                "FracPart" => Some("frac"),
+                "GreatCommonDivisor" => Some("gcd"),
+                "HyperbolicArcCosine" => Some("hacos"),
+                "HyperbolicArcSine" => Some("hasin"),
+                "HyperbolicArcTangent" => Some("hatan"),
+                "HyperbolicCosine" => Some("hcos"),
+                "HyperbolicSine" => Some("hsin"),
+                "HyperbolicTangent" => Some("htan"),
+                "ImaginaryPart" => Some("imag"),
+                "LeastCommonMultiple" => Some("lcm"),
+                "Integral" => Some("int"),
+                "Opposite" => Some("-"),
+                "Randint" => Some("randint"),
+                "Random" => Some("rand"),
+                "RealPart" => Some("real"),
+                "Round" => Some("round"),
+                "SignFunction" => Some("sign"),
+                "Sine" => Some("sin"),
+                "Tangent" => Some("tan"),
                 "SquareRoot" => Some("sqrt"),
                 "NaperianLogarithm" => Some("ln"),
                 _ => None,
@@ -152,6 +181,14 @@ impl PoincareNode {
                     }
                     child_n += 1;
                 }
+                break 'types;
+            }
+            let plain_name: Option<&str> = match self.name.as_str() {
+                "Undefined" => Some("undef"),
+                _ => None,
+            };
+            if let Some(name) = plain_name {
+                output.push_str(name);
                 break 'types;
             }
             // default to full log when nothing else is available

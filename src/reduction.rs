@@ -83,14 +83,26 @@ impl ReduceProcessNode {
             }
         }
     }
+    pub fn view(&self, long_form: bool) -> ReduceProcessView {
+        ReduceProcessView {
+            node: self,
+            long_form,
+        }
+    }
 }
-impl Display for ReduceProcessNode {
+#[derive(Debug, Clone)]
+pub struct ReduceProcessView<'a> {
+    node: &'a ReduceProcessNode,
+    long_form: bool,
+}
+impl<'a> Display for ReduceProcessView<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{} {}:\n",
             "* Reduce".red().bold(),
             &self
+                .node
                 .original_expression
                 .clone()
                 .unwrap_or(PoincareNode {
@@ -101,14 +113,15 @@ impl Display for ReduceProcessNode {
                 })
                 .pretty_print(0, false)
         )?;
-        for step in &self.steps {
-            write!(indented(f), "{}\n", step)?;
+        for step in &self.node.steps {
+            write!(indented(f), "{}\n", step.view(self.long_form))?;
         }
         write!(
             f,
             "{} {}",
             "*->".red().bold(),
             &self
+                .node
                 .result_expression
                 .clone()
                 .unwrap_or(PoincareNode {
@@ -217,21 +230,42 @@ impl StepNode {
             steps.remove(n);
         }
     }
-}
-impl Display for StepNode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let begin_str = format!("/> {} \n", self.name).cyan().bold();
-        write!(f, "{}", begin_str)?;
-        if let Some(before) = &self.before {
-            write!(f, "{} {}\n", "|".cyan().bold(), before.pretty_print(0, false))?;
+    pub fn view(&self, long_form: bool) -> StepView {
+        StepView {
+            node: self,
+            long_form,
         }
-        if self.substeps.len() > 0 {
-            for substep in &self.substeps {
-                write!(indented(f).with_str("|    "), "{}\n", substep)?;
+    }
+}
+#[derive(Debug, Clone)]
+pub struct StepView<'a> {
+    node: &'a StepNode,
+    long_form: bool,
+}
+impl<'a> Display for StepView<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let begin_str = format!("/> {} \n", self.node.name).cyan().bold();
+        write!(f, "{}", begin_str)?;
+        if let Some(before) = &self.node.before {
+            write!(
+                f,
+                "{} {}\n",
+                "|".cyan().bold(),
+                before.pretty_print(0, self.long_form)
+            )?;
+        }
+        if self.node.substeps.len() > 0 {
+            for substep in &self.node.substeps {
+                write!(indented(f).with_str("|    "), "{}\n", substep.view(self.long_form))?;
             }
         }
-        if let Some(after) = &self.after {
-            write!(f, "{} {}", "\\_".cyan().bold(), after.pretty_print(0, false))?;
+        if let Some(after) = &self.node.after {
+            write!(
+                f,
+                "{} {}",
+                "\\_".cyan().bold(),
+                after.pretty_print(0, self.long_form)
+            )?;
         }
         Ok(())
     }

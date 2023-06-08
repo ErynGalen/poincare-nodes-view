@@ -27,6 +27,8 @@ When running with `cargo run`, command line option must be passed as follow: `ca
 By default some reduction steps aren't displayed, the following options are available to show them:
 * `--useless`: show all the steps, even those doing nothing. Implies `--number-to-rational`
 * `--number-to-rational`: show steps which transform f.e. a BasedInteger into a Rational with the same value
+By default the nodes are displayed in a short form representing them briefly. If you wish to display the [long form](#poincare-node-long-form), you can use:
+* `--long`
 
 ### Building
 To compile it in release mode you can use `cargo build --release`.
@@ -35,9 +37,9 @@ The resulting binary will be `target/release/poincare-nodes-view`.
 ## XML Log Format
 At the top-level of the XML file there should only be `ReduceProcess` nodes.
 A `ReduceProcess` node is made of:
-* a `OriginalExpression` and a `ResultExpression` containing [`PoincareNode`s](#poincare-node), which represent the expression before and after the simplification
-* several `Step` nodes containing two [`PoincareNode`s](#poincare-node), representing **some part** of the expression before and after the simplification step. The unique ids in the expression before the step can be used to know which part of the expression is simplified by the step.
-### Poincare Node
+* a `OriginalExpression` and a `ResultExpression` containing [`PoincareNode`s](#poincare-node-long-form), which represent the expression before and after the simplification
+* several `Step` nodes containing two [`PoincareNode`s](#poincare-node-long-form), representing **some part** of the expression before and after the simplification step. The unique ids in the expression before the step can be used to know which part of the expression is simplified by the step.
+### Poincare Node: long form
 A Poincare node has the following form:
 `<NodeName id="..." attr1="..." attr2="..."> ...children... </NodeName>`.
 It can have 0 or more children, which are others Poincare nodes.

@@ -40,7 +40,7 @@ fn main() {
                             steps_to_remove_mask.step_is_either(step)
                         });
                     }
-                    println!("{}\n", process);
+                    println!("{}\n", process.view(arguments.print_long_form));
                 }
                 string => panic_event(&reader, String::from_utf8(string.to_vec()).unwrap()),
             },
@@ -54,6 +54,7 @@ fn main() {
 struct Arguments {
     show_useless: bool,
     show_number_to_rational: bool,
+    print_long_form: bool,
 }
 impl Arguments {
     fn from_args(args: env::Args) -> Self {
@@ -61,12 +62,11 @@ impl Arguments {
         // the first argument is almost always the program name or the path it was run from
         for arg in args.skip(1) {
             let arg = arg.trim();
-            if arg == "--useless" {
-                arguments.show_useless = true;
-            } else if arg == "--number-to-rational" {
-                arguments.show_number_to_rational = true;
-            } else {
-                eprintln!("Unknown argument: `{}`, skipping", arg);
+            match arg {
+                "--useless" => arguments.show_useless = true,
+                "--number-to-rational" => arguments.show_number_to_rational = true,
+                "--long" => arguments.print_long_form = true,
+                _ => eprintln!("Unknown argument: `{}`, skipping", arg),
             }
         }
         arguments
@@ -77,6 +77,7 @@ impl Default for Arguments {
         Self {
             show_useless: false,
             show_number_to_rational: false,
+            print_long_form: false,
         }
     }
 }

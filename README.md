@@ -25,8 +25,10 @@ See [the parsed action tree](#parsed-action-tree) for more information.
 When running with `cargo run`, command line option must be passed as follow: `cargo run -- --opt1 --opt2`.
 
 By default some reduction steps aren't displayed, the following options are available to show them:
-* `--useless`: show all the steps, even those doing nothing. Implies `--number-to-rational`
+* `--useless`: show all the steps, even those doing nothing. Implies all the following options
 * `--number-to-rational`: show steps which transform f.e. a BasedInteger into a Rational with the same value
+* `--to-undef`: show steps leading to `Undefined` node
+
 By default the nodes are displayed in a short form representing them briefly. If you wish to display the [long form](#poincare-node-long-form), you can use:
 * `--long`
 

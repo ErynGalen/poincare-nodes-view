@@ -35,6 +35,7 @@ fn main() {
                     if !arguments.show_useless {
                         let steps_to_remove_mask = StepTypeMask {
                             based_integer_to_rational: !arguments.show_number_to_rational,
+                            to_undef: !arguments.show_to_undef,
                         };
                         StepNode::remove_useless_recursive(&mut process.steps, |step| {
                             steps_to_remove_mask.step_is_either(step)
@@ -54,6 +55,7 @@ fn main() {
 struct Arguments {
     show_useless: bool,
     show_number_to_rational: bool,
+    show_to_undef: bool,
     print_long_form: bool,
 }
 impl Arguments {
@@ -65,6 +67,7 @@ impl Arguments {
             match arg {
                 "--useless" => arguments.show_useless = true,
                 "--number-to-rational" => arguments.show_number_to_rational = true,
+                "--to-undef" => arguments.show_to_undef = true,
                 "--long" => arguments.print_long_form = true,
                 _ => eprintln!("Unknown argument: `{}`, skipping", arg),
             }
@@ -77,6 +80,7 @@ impl Default for Arguments {
         Self {
             show_useless: false,
             show_number_to_rational: false,
+            show_to_undef: false,
             print_long_form: false,
         }
     }

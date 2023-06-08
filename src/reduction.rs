@@ -256,7 +256,11 @@ impl<'a> Display for StepView<'a> {
         }
         if self.node.substeps.len() > 0 {
             for substep in &self.node.substeps {
-                write!(indented(f).with_str("|    "), "{}\n", substep.view(self.long_form))?;
+                write!(
+                    indented(f).with_str("|    "),
+                    "{}\n",
+                    substep.view(self.long_form)
+                )?;
             }
         }
         if let Some(after) = &self.node.after {
@@ -274,6 +278,7 @@ impl<'a> Display for StepView<'a> {
 #[derive(Debug, Clone, Copy)]
 pub struct StepTypeMask {
     pub based_integer_to_rational: bool,
+    pub to_undef: bool,
 }
 impl StepTypeMask {
     pub fn step_is_either(&self, step: &StepNode) -> bool {
@@ -288,6 +293,32 @@ impl StepTypeMask {
                 }
             }
         }
+        if self.to_undef {
+            if let Some(result) = &step.after {
+                fn node_is_undef(node: &PoincareNode) -> bool {
+                    if node.name == "Undefined" {
+                        return true;
+                    }
+                    for child in &node.children {
+                        if node_is_undef(child) {
+                            return true;
+                        }
+                    }
+                    false
+                }
+                if node_is_undef(&result) {
+                    return true;
+                }
+            }
+        }
         false
+    }
+}
+impl Default for StepTypeMask {
+    fn default() -> Self {
+        Self {
+            based_integer_to_rational: false,
+            to_undef: false,
+        }
     }
 }

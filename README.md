@@ -32,7 +32,7 @@ By default some reduction steps aren't displayed, the following options are avai
 * `--number-to-rational`: show steps which transform f.e. a BasedInteger into a Rational with the same value
 * `--to-undef`: show steps leading to `Undefined` node
 
-By default the nodes are displayed in a short form representing them briefly. If you wish to display the [long form](#poincare-node-long-form), you can use:
+By default the nodes are displayed in a short form representing them briefly. If you wish to display the [long form](#poincare-expression), you can use:
 * `--long`
 
 ### Building
@@ -40,11 +40,15 @@ To compile it in release mode you can use `cargo build --release`.
 The resulting binary will be `target/release/poincare-nodes-view`.
 
 ## XML Log Format
-At the top-level of the XML file there should only be `ReduceProcess` nodes.
-A `ReduceProcess` node is made of:
-* a `OriginalExpression` and a `ResultExpression` containing [`PoincareNode`s](#poincare-node-long-form), which represent the expression before and after the simplification
-* several `Step` nodes containing two [`PoincareNode`s](#poincare-node-long-form), representing **some part** of the expression before and after the simplification step. The unique ids in the expression before the step can be used to know which part of the expression is simplified by the step.
-### Poincare Node: long form
+At the top-level of the XML file there should only be `Step` nodes.
+A `Step` node is made of:
+* other `Step` nodes, which are substeps
+* `State` nodes, which contain a [`PoincareNode`](#poincare-node) representing the state. A `State` node may have a `name` attribute to 
+
+A state represent **some part** of the expression being reduced. The unique ids in the expression's long form  can be used to distinguish which part of the expression is simplified by the step.
+
+A step should contain a `State` whose name is `before` and a `State` whose name is `after`. These states should represent the expression before and after the simplification step.
+### Poincare Node
 A Poincare node has the following form:
 `<NodeName id="..." attr1="..." attr2="..."> ...children... </NodeName>`.
 It can have 0 or more children, which are others Poincare nodes.
@@ -52,17 +56,6 @@ It can have 0 or more children, which are others Poincare nodes.
 Each node has a unique `id` which is preserved across simplification steps and simplifications.
 
 ## Parsed Action Tree
-### ReduceAction
-Each Reduce action has the form:
-```
-* Reduce <original poincare expression>:
-    <step1>
-    <step2>
-    ...
-*-> <result poincare expression>
-```
-There may be 0 or more steps.
-
 ### Step
 Each simplification step has the form:
 ```
@@ -70,14 +63,24 @@ Each simplification step has the form:
 | <poincare expression before the step>
 |    <substep1>
 |    <substep2>
+|- <state1>
+|    <substep3>
+|- <state2>
 |    ...
 \_ <poincare expression>
 ```
 Each step has a name which represents which function is achieving it.
 
-There may be 0 or more substeps.
+There may be 0 or more substeps, and 0 or more states. Except for `before` and `after` states, the order of substeps and states is the order in which actions and states occur.
+
+A state is either a Poincare expression, or has the form `<name> = <poincare expression>` for named states.
 
 ### Poincare expression
+There are two possible ways of displaying Poincare expression: long form and short form.
+The short form tries to be as close as possible to mathematical expressions, whereas the long form tries to give as much information as possible.
+
+The following describes the **long form**.
+
 A Poincare expression has the form:
 ```
 <node name>(<unique id>): <node representation> { <child node 1>, <child node 2>, ... }

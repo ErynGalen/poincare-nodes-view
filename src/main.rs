@@ -11,7 +11,7 @@ use quick_xml::{
 mod poincare;
 mod reduction;
 
-use reduction::{ReduceProcessNode, StepNode, StepTypeMask};
+use reduction::{StepNode, StepPart, StepTypeMask};
 
 fn main() {
     let mut arguments = Arguments::from_args(env::args());
@@ -24,7 +24,8 @@ fn main() {
         let xml_string_result = read_to_string(file);
         let xml_string = match xml_string_result {
             Err(e) => {
-                println!("Error while opening {}: {}", file, e);
+                let error_str = format!("{}", e);
+                println!("Error while opening `{}`: {}", file, error_str.red());
                 return;
             }
             Ok(xml_string) => xml_string,
@@ -36,19 +37,25 @@ fn main() {
                 Err(e) => panic!("Error at position {}: {:?}", reader.buffer_position(), e),
                 Ok(Event::Eof) => break,
                 Ok(Event::Start(start)) => match start.name().as_ref() {
-                    b"ReduceProcess" => {
-                        let mut process = ReduceProcessNode::from_start(&start);
-                        process.build(&mut reader);
+                    b"Step" => {
+                        let mut step = StepNode::from_start(&start);
+                        step.build(&mut reader);
                         if !arguments.show_useless {
                             let steps_to_remove_mask = StepTypeMask {
                                 based_integer_to_rational: !arguments.show_number_to_rational,
                                 to_undef: !arguments.show_to_undef,
                             };
-                            StepNode::remove_useless_recursive(&mut process.steps, |step| {
-                                steps_to_remove_mask.step_is_either(step)
-                            });
+                            StepPart::remove_useless_recursive(
+                                &mut step.parts,
+                                |part| match part {
+                                    StepPart::State(..) => false,
+                                    StepPart::Substep(step) => {
+                                        step.does_nothing() || steps_to_remove_mask.step_is_either(step)
+                                    }
+                                },
+                            );
                         }
-                        println!("{}\n", process.view(arguments.print_long_form));
+                        println!("{}\n", step.view(arguments.print_long_form));
                     }
                     string => panic_event(&reader, String::from_utf8(string.to_vec()).unwrap()),
                 },

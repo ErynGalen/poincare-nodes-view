@@ -192,16 +192,19 @@ impl PoincareNode {
                 output.push_str(name);
                 break 'types;
             }
-            if self.name == "Parenthesis" {
-                if self.children.len() != 1 {
-                    panic!("ParenthesisNode can only have exactly one child");
+
+            // formats specific to one node
+            match self.name.as_str() {
+                "Parenthesis" => {
+                    if self.children.len() != 1 {
+                        panic!("ParenthesisNode can only have exactly one child");
+                    }
+                    // display {} for ParenthesisNode to differentiate it from other parentheses
+                    output.push_str(&format!("{{{}}}", children_output.first().unwrap()));
                 }
-                // display {} for ParenthesisNode to differentiate it from other parentheses
-                output.push_str(&format!("{{{}}}", children_output.first().unwrap()));
-                break 'types;
+                // default to full log when nothing else is available
+                _ => output.push_str(&self.print_long_form(nesting_level, false)),
             }
-            // default to full log when nothing else is available
-            output.push_str(&self.print_long_form(nesting_level, false));
         }
         output.color(Self::nesting_level_color(nesting_level))
     }

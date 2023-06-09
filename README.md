@@ -15,14 +15,17 @@ So that the logging actually happens, the branch defines `POINCARE_TREE_LOG=1` f
 ### Running
 To run `poincare-nodes-view` you can use `cargo run`. This will run a debug build.
 
-`poincare-nodes-view` reads the file `poincare-log.xml`, expected to be in the directory from which you are running the program in.
+By default, `poincare-nodes-view` reads the file `poincare-log.xml`, expected to be in the directory from which you are running the program in. If you wish to read other files, you can pass file names as options, e.g. `cargo run -- file-to-read.xml`. See [command line options](#command-line-options) for more information about how to pass options.
 See [the format of the file](#xml-log-format) for more information.
 
 `poincare-nodes-view` outputs in a (hopefully) readable form the log of actions preformed by Poincare when simplifying an expression.
 See [the parsed action tree](#parsed-action-tree) for more information.
 
 ### Command line options
-When running with `cargo run`, command line option must be passed as follow: `cargo run -- --opt1 --opt2`.
+When running with `cargo run`, command line option must be passed as follow: `cargo run -- --opt1 --opt2 file1 file2`.
+You can specify files and options in any order.
+
+All the files passed to `poincare-nodes-view` will be read in the order they're supplied in the command line.
 
 By default some reduction steps aren't displayed, the following options are available to show them:
 * `--useless`: show all the steps, even those doing nothing. Implies all the following options

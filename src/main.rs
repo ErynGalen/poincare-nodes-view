@@ -48,7 +48,7 @@ fn main() {
                             StepPart::remove_useless_recursive(
                                 &mut step.parts,
                                 |part| match part {
-                                    StepPart::State(..) => false,
+                                    StepPart::State(..) => arguments.dont_show_intermediate_states,
                                     StepPart::Substep(step) => {
                                         step.does_nothing() || steps_to_remove_mask.step_is_either(step)
                                     }
@@ -71,6 +71,7 @@ struct Arguments {
     show_useless: bool,
     show_number_to_rational: bool,
     show_to_undef: bool,
+    dont_show_intermediate_states: bool,
     print_long_form: bool,
     // list of files to analyse
     files: Vec<String>,
@@ -86,7 +87,9 @@ impl Arguments {
                 "--number-to-rational" => arguments.show_number_to_rational = true,
                 "--to-undef" => arguments.show_to_undef = true,
                 "--long" => arguments.print_long_form = true,
-                file_name => arguments.files.push(String::from(file_name)),
+                "--no-states" => arguments.dont_show_intermediate_states = true,
+                file_name if !file_name.starts_with("--") => arguments.files.push(String::from(file_name)),
+                opt  => eprintln!("Unknown option: '{}', skipping", opt),
             }
         }
         arguments
@@ -98,6 +101,7 @@ impl Default for Arguments {
             show_useless: false,
             show_number_to_rational: false,
             show_to_undef: false,
+            dont_show_intermediate_states: false,
             print_long_form: false,
             files: Vec::new(),
         }

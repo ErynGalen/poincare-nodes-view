@@ -169,8 +169,8 @@ impl StepPart {
                             return false;
                         }
                     }
+                    return true; // all substeps were useless
                 }
-                return true; // all substeps were useless
             }
             false // assume a step is useful by default
         }

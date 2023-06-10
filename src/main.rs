@@ -50,7 +50,8 @@ fn main() {
                                 |part| match part {
                                     StepPart::State(..) => arguments.dont_show_intermediate_states,
                                     StepPart::Substep(step) => {
-                                        step.does_nothing() || steps_to_remove_mask.step_is_either(step)
+                                        step.does_nothing()
+                                            || steps_to_remove_mask.step_is_either(step)
                                     }
                                 },
                             );
@@ -88,8 +89,10 @@ impl Arguments {
                 "--to-undef" => arguments.show_to_undef = true,
                 "--long" => arguments.print_long_form = true,
                 "--no-states" => arguments.dont_show_intermediate_states = true,
-                file_name if !file_name.starts_with("--") => arguments.files.push(String::from(file_name)),
-                opt  => eprintln!("Unknown option: '{}', skipping", opt),
+                file_name if !file_name.starts_with("--") => {
+                    arguments.files.push(String::from(file_name))
+                }
+                opt => eprintln!("Unknown option: '{}', skipping", opt),
             }
         }
         arguments

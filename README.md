@@ -27,6 +27,9 @@ You can specify files and options in any order.
 
 All the files passed to `poincare-nodes-view` will be read in the order they're supplied in the command line.
 
+By default intermediate states in steps are displayed, if you want to hide them, you can use:
+* `--no-states`
+
 By default some reduction steps aren't displayed, the following options are available to show them:
 * `--useless`: show all the steps, even those doing nothing. Implies all the following options
 * `--number-to-rational`: show steps which transform f.e. a BasedInteger into a Rational with the same value

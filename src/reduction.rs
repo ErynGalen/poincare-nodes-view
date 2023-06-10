@@ -107,17 +107,20 @@ impl<'a> Display for StepView<'a> {
         if self.node.parts.len() > 0 {
             for part in &self.node.parts {
                 match part {
-                    StepPart::State(name, state) => write!(
-                        f,
-                        "{}{}{}",
-                        "|- ".cyan().bold(),
-                        if let Some(name) = name {
-                            format!("{} = ", name)
+                    StepPart::State(name, state) => {
+                        let state_prefix_str = if let Some(name) = name {
+                            format!("{}: ", name)
                         } else {
                             String::new()
-                        },
-                        state.pretty_print(0, self.long_form)
-                    )?,
+                        };
+                        write!(
+                            f,
+                            "{}{}{}\n",
+                            "|- ".cyan().bold(),
+                            state_prefix_str.cyan(),
+                            state.pretty_print(0, self.long_form)
+                        )?;
+                    }
                     StepPart::Substep(substep) => write!(
                         indented(f).with_str("|    "),
                         "{}\n",
@@ -151,9 +154,29 @@ impl StepPart {
     where
         F: Fn(&StepPart) -> bool + Copy,
     {
+        fn is_useless_recursive<F>(part: &StepPart, is_useless_shallow: F) -> bool
+        where
+            F: Fn(&StepPart) -> bool + Copy,
+        {
+            if is_useless_shallow(part) {
+                return true;
+            }
+            // if there are substeps, at least one must be useful
+            if let StepPart::Substep(step) = part {
+                if step.parts.len() > 0 {
+                    for part in &step.parts {
+                        if !is_useless_recursive(part, is_useless_shallow) {
+                            return false;
+                        }
+                    }
+                }
+                return true; // all substeps were useless
+            }
+            false // assume a step is useful by default
+        }
         let mut parts_to_remove: Vec<usize> = Vec::new();
         for (n, part) in steps.iter_mut().enumerate() {
-            if is_useless(part) {
+            if is_useless_recursive(part, is_useless) {
                 parts_to_remove.push(n);
             } else {
                 match part {

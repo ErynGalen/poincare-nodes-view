@@ -51,18 +51,18 @@ impl StepNode {
                             Ok(Event::End(end)) => match end.name().as_ref() {
                                 b"State" => (),
                                 string => panic_event(
-                                    &reader,
+                                    reader,
                                     String::from_utf8(string.to_vec()).unwrap(),
                                 ),
                             },
                             other => panic_event(reader, other),
                         }
                     }
-                    start => panic_event(&reader, String::from_utf8(start.to_vec()).unwrap()),
+                    start => panic_event(reader, String::from_utf8(start.to_vec()).unwrap()),
                 },
                 Ok(Event::End(end)) => match end.name().as_ref() {
                     b"Step" => break,
-                    string => panic_event(&reader, String::from_utf8(string.to_vec()).unwrap()),
+                    string => panic_event(reader, String::from_utf8(string.to_vec()).unwrap()),
                 },
                 Ok(ev) => panic_event(reader, ev),
             }
@@ -97,9 +97,9 @@ impl<'a> Display for StepView<'a> {
         let begin_str = format!("/> {} \n", self.node.name).cyan().bold();
         write!(f, "{}", begin_str)?;
         if let Some(before) = &self.node.before {
-            write!(
+            writeln!(
                 f,
-                "{} {}\n",
+                "{} {}",
                 "|".cyan().bold(),
                 before.pretty_print(0, self.long_form)
             )?;
@@ -113,17 +113,17 @@ impl<'a> Display for StepView<'a> {
                         } else {
                             String::new()
                         };
-                        write!(
+                        writeln!(
                             f,
-                            "{}{}{}\n",
+                            "{}{}{}",
                             "|- ".cyan().bold(),
                             state_prefix_str.cyan(),
                             state.pretty_print(0, self.long_form)
                         )?;
                     }
-                    StepPart::Substep(substep) => write!(
+                    StepPart::Substep(substep) => writeln!(
                         indented(f).with_str("|    "),
-                        "{}\n",
+                        "{}",
                         substep.view(self.long_form)
                     )?,
                 }
@@ -226,7 +226,7 @@ impl StepTypeMask {
                     }
                     false
                 }
-                if node_is_undef(&result) {
+                if node_is_undef(result) {
                     return true;
                 }
             }

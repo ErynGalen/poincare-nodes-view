@@ -18,6 +18,7 @@ fn main() {
     if arguments.files.len() == 0 {
         arguments.files.push(String::from("poincare-log.xml"));
     }
+
     for file in &arguments.files {
         let start_file_str = format!("Reading file `{}`", file);
         println!("{}", start_file_str.red());
@@ -45,6 +46,7 @@ fn main() {
                                 based_integer_to_rational: !arguments.show_number_to_rational,
                                 to_undef: !arguments.show_to_undef,
                             };
+
                             StepPart::remove_useless_recursive(
                                 &mut step.parts,
                                 |part| match part {

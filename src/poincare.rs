@@ -18,11 +18,13 @@ impl PoincareNode {
     pub fn from_start(start: &BytesStart, pos: usize) -> Self {
         Self {
             name: String::from_utf8(start.name().as_ref().to_vec()).unwrap(),
-            id: get_attribute_from_start(start, b"id").expect(&format!(
-                "no id for node {} at pos {}",
-                String::from_utf8(start.name().as_ref().to_vec()).unwrap(),
-                pos
-            )),
+            id: get_attribute_from_start(start, b"id").unwrap_or_else(|| {
+                panic!(
+                    "no id for node {} at pos {}",
+                    String::from_utf8(start.name().as_ref().to_vec()).unwrap(),
+                    pos
+                )
+            }),
             attributes: PoincareAttributes::try_from_start(start),
             children: Vec::new(),
         }
@@ -111,8 +113,7 @@ impl PoincareNode {
                 _ => None,
             };
             if let Some(op) = nary_operation {
-                let mut child_n = 0;
-                for child_str in &children_output {
+                for (child_n, child_str) in children_output.iter().enumerate() {
                     // only add parentheses when the child has more than one children
                     let child_str = if child_n == children_output.len() - 1 {
                         if self.children[child_n].children.len() > 1 {
@@ -128,7 +129,6 @@ impl PoincareNode {
                         }
                     };
                     output.push_str(&child_str);
-                    child_n += 1;
                 }
                 break 'types;
             }
@@ -170,8 +170,7 @@ impl PoincareNode {
                 _ => None,
             };
             if let Some(f) = prefixed_function {
-                let mut child_n = 0;
-                for child_str in &children_output {
+                for (child_n, child_str) in children_output.iter().enumerate() {
                     if child_n == 0 {
                         output.push_str(&format!("{}({}", f, child_str));
                     } else {
@@ -180,7 +179,6 @@ impl PoincareNode {
                     if child_n == children_output.len() - 1 {
                         output.push_str(")");
                     }
-                    child_n += 1;
                 }
                 break 'types;
             }

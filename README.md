@@ -76,7 +76,7 @@ Each step has a name which represents which function is achieving it.
 
 There may be 0 or more substeps, and 0 or more states. Except for `before` and `after` states, the order of substeps and states is the order in which actions and states occur.
 
-A state is either a Poincare expression, or has the form `<name> = <poincare expression>` for named states.
+A state is either a Poincare expression, or has the form `<name>: <poincare expression>` for named states.
 
 ### Poincare expression
 There are two possible ways of displaying Poincare expression: long form and short form.
